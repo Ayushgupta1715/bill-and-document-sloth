@@ -3,8 +3,8 @@
 > **“Stop sorting paperwork. Start living.”**  
 > *A 100% Local-First AI Document Assistant & Deadline Tracker for Hacktoberfest 2026 Week 3: Slow and Steady (`#hf26challenge`).*
 
-[![Bill & Document Sloth CI](https://github.com/your-username/bill-and-document-sloth/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/bill-and-document-sloth/actions)
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/your-username/bill-and-document-sloth)
+[![Bill & Document Sloth CI](https://github.com/Ayushgupta1715/bill-and-document-sloth/actions/workflows/ci.yml/badge.svg)](https://github.com/Ayushgupta1715/bill-and-document-sloth/actions)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Ayushgupta1715/bill-and-document-sloth)
 
 ---
 
@@ -108,7 +108,7 @@ Traditional document managers send personal bills, bank statements, and medical 
 
 ### 2. Installation
 ```bash
-git clone https://github.com/your-username/bill-and-document-sloth.git
+git clone https://github.com/Ayushgupta1715/bill-and-document-sloth.git
 cd bill-and-document-sloth
 
 pip install -r requirements.txt

@@ -3,7 +3,7 @@ title: "Bill & Document Sloth: Stop Sorting Paperwork. Start Living. 🦥"
 published: true
 tags: hf26challenge, opensource, ai, python
 cover_image: https://raw.githubusercontent.com/your-username/bill-and-document-sloth/main/assets/cover.png
-canonical_url: https://github.com/your-username/bill-and-document-sloth
+canonical_url: https://github.com/Ayushgupta1715/bill-and-document-sloth
 ---
 
 ## 🦥 What I Built: Bill & Document Sloth
@@ -88,7 +88,7 @@ python -m pytest tests
 
 ## 🔗 Links and Repository
 
-* **GitHub Repository:** [https://github.com/your-username/bill-and-document-sloth](https://github.com/your-username/bill-and-document-sloth)
+* **GitHub Repository:** [https://github.com/Ayushgupta1715/bill-and-document-sloth](https://github.com/Ayushgupta1715/bill-and-document-sloth)
 * **License:** MIT License
 
 *Stop sorting paperwork. Start living. 🦥*
