@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bill & Document Sloth — Stop sorting paperwork. Start living.</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- Top App Navigation / Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-2xl shadow-sm">
+          🦥
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="font-bold text-lg text-slate-900 tracking-tight">Bill & Document Sloth</h1>
+            <span class="text-xs bg-emerald-100 text-emerald-800 font-medium px-2 py-0.5 rounded-full flex items-center">
+              <i data-lucide="shield-check" class="w-3 h-3 mr-1"></i> 100% Local-First
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 hidden sm:block">Stop sorting paperwork. Start living.</p>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="flex items-center space-x-3">
+        <button id="btnVoiceBriefing" onclick="handleVoiceBriefing()" class="inline-flex items-center text-xs sm:text-sm font-medium text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-colors" title="Powered by ElevenLabs Voice">
+          <i data-lucide="volume-2" class="w-4 h-4 mr-1.5 text-emerald-600"></i>
+          <span>Sloth Audio Briefing</span>
+        </button>
+        <button id="btnLoadDemo" onclick="handleGenerateDemo()" class="inline-flex items-center text-xs sm:text-sm font-medium text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-1.5 rounded-lg transition-colors">
+          <i data-lucide="sparkles" class="w-4 h-4 mr-1.5 text-amber-600"></i>
+          Load Demo Pack
+        </button>
+        <button onclick="openUploadModal()" class="inline-flex items-center text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-3.5 py-1.5 rounded-lg shadow-sm transition-colors">
+          <i data-lucide="upload-cloud" class="w-4 h-4 mr-1.5"></i>
+          Upload Documents
+        </button>
+        <button onclick="exportCSV()" class="inline-flex items-center text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors" title="Export metadata to CSV">
+          <i data-lucide="download" class="w-4 h-4 mr-1"></i>
+          Export
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full flex flex-col md:flex-row gap-6">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-60 shrink-0 space-y-6">
+      <nav class="bg-white rounded-xl border border-slate-200 p-2 shadow-sm space-y-1">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg text-blue-700 bg-blue-50">
+          <i data-lucide="layout-dashboard" class="w-4 h-4 mr-3 text-blue-600"></i>
+          Overview
+        </button>
+        <button onclick="switchTab('documents')" id="nav-documents" class="nav-item w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:bg-slate-100">
+          <i data-lucide="files" class="w-4 h-4 mr-3 text-slate-500"></i>
+          All Documents
+          <span id="badgeAllDocs" class="ml-auto bg-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded-full font-mono">0</span>
+        </button>
+        <button onclick="switchTab('deadlines')" id="nav-deadlines" class="nav-item w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:bg-slate-100">
+          <i data-lucide="calendar-clock" class="w-4 h-4 mr-3 text-amber-500"></i>
+          Upcoming Dates
+          <span id="badgeDeadlines" class="ml-auto bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-mono">0</span>
+        </button>
+        <button onclick="switchTab('privacy')" id="nav-privacy" class="nav-item w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:bg-slate-100">
+          <i data-lucide="lock" class="w-4 h-4 mr-3 text-emerald-600"></i>
+          Privacy & Proof
+        </button>
+      </nav>
+
+      <!-- Category Filter Shortcuts -->
+      <div class="bg-white rounded-xl border border-slate-200 p-3 shadow-sm">
+        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Categories</h3>
+        <div class="space-y-1" id="sidebarCategoryList">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Sloth Zen Tip Card -->
+      <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/60 rounded-xl p-3.5 shadow-sm text-xs text-amber-900">
+        <div class="flex items-center space-x-2 font-semibold mb-1 text-amber-950">
+          <span>🌿</span>
+          <span>Sloth Rule #1</span>
+        </div>
+        <p class="text-amber-800 leading-relaxed">
+          Never open a PDF just to check a payment due date or bill amount. Let local AI extract it once.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 min-w-0">
+
+      <!-- TAB 1: DASHBOARD VIEW -->
+      <section id="tab-dashboard" class="space-y-6">
+        <!-- Welcome Banner -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Your paperwork, under control.</h2>
+              <p class="text-sm text-slate-500 mt-1">Here is what needs your attention today. Safe, organized, and 100% on your machine.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span id="syncIndicator" class="inline-flex items-center text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
+                SQLite Local DB Ready
+              </span>
+            </div>
+          </div>
+
+          <!-- Summary Metric Cards -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+            <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-500">Total Documents</span>
+                <i data-lucide="file-check-2" class="w-4 h-4 text-blue-500"></i>
+              </div>
+              <p id="statTotalDocs" class="text-2xl font-bold text-slate-900 mt-2 font-mono">0</p>
+              <span class="text-[11px] text-slate-400">In local library</span>
+            </div>
+
+            <div class="bg-amber-50/60 border border-amber-200/70 rounded-xl p-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-amber-700">Needs Review</span>
+                <i data-lucide="alert-circle" class="w-4 h-4 text-amber-600"></i>
+              </div>
+              <p id="statNeedsReview" class="text-2xl font-bold text-amber-900 mt-2 font-mono">0</p>
+              <span class="text-[11px] text-amber-600">Awaiting user approval</span>
+            </div>
+
+            <div class="bg-rose-50/60 border border-rose-200/70 rounded-xl p-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-rose-700">Upcoming Bills</span>
+                <i data-lucide="credit-card" class="w-4 h-4 text-rose-600"></i>
+              </div>
+              <p id="statUpcomingBills" class="text-2xl font-bold text-rose-900 mt-2 font-mono">0</p>
+              <span class="text-[11px] text-rose-600">Payment deadlines tracked</span>
+            </div>
+
+            <div class="bg-indigo-50/60 border border-indigo-200/70 rounded-xl p-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-indigo-700">Expiring Soon</span>
+                <i data-lucide="shield" class="w-4 h-4 text-indigo-600"></i>
+              </div>
+              <p id="statExpiring" class="text-2xl font-bold text-indigo-900 mt-2 font-mono">0</p>
+              <span class="text-[11px] text-indigo-600">Warranties & policies</span>
+            </div>
+          </div>
+
+          <!-- Prior Labs TabPFN-3.5 Tabular AI Forecast & Anomaly Detection Card -->
+          <div class="mt-4 bg-gradient-to-r from-violet-50 via-purple-50 to-indigo-50 border border-purple-200/80 rounded-xl p-4 shadow-2xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+              <div class="flex items-center space-x-2">
+                <span class="text-base">🔮</span>
+                <div>
+                  <h4 class="font-bold text-slate-900 text-xs sm:text-sm flex items-center">
+                    Prior Labs TabPFN-3.5: Tabular Bill Forecasting & Anomaly Detection
+                    <span class="ml-2 text-[10px] bg-purple-200/80 text-purple-900 font-bold px-2 py-0.5 rounded-full">$200 Prize Track</span>
+                  </h4>
+                  <p class="text-[11px] text-purple-800">In-context tabular foundation model analyzing recurring expenses & spending anomalies.</p>
+                </div>
+              </div>
+              <button onclick="loadTabPFNInsights()" class="inline-flex items-center text-xs font-semibold text-purple-900 bg-white hover:bg-purple-100 border border-purple-300 px-3 py-1 rounded-lg transition-colors">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 mr-1 text-purple-600"></i> Run TabPFN
+              </button>
+            </div>
+
+            <div id="tabpfnInsightsContent" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div class="bg-white/80 border border-purple-100 rounded-lg p-3">
+                <span class="text-slate-500 font-medium">Next Month Projected Utility Spend:</span>
+                <div class="text-lg font-bold font-mono text-purple-950 mt-1" id="tabpfnForecastAmount">Calculating...</div>
+                <span class="text-[10px] text-purple-700" id="tabpfnForecastBasis">TabPFN prior tabular weights</span>
+              </div>
+              <div class="bg-white/80 border border-purple-100 rounded-lg p-3" id="tabpfnAnomaliesContainer">
+                <span class="text-slate-500 font-medium">Tabular Outliers / Anomalies:</span>
+                <div class="text-xs font-semibold text-slate-800 mt-1" id="tabpfnAnomalyText">Scanning bills...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two Column Layout: Urgent Deadlines + Recent Activity -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          <!-- Urgent Deadlines (2 cols) -->
+          <div class="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="alarm-clock" class="w-5 h-5 text-rose-500"></i>
+                <h3 class="font-bold text-slate-900">Upcoming Deadlines</h3>
+              </div>
+              <button onclick="switchTab('deadlines')" class="text-xs text-blue-600 hover:text-blue-800 font-medium">View All →</button>
+            </div>
+
+            <div id="urgentDeadlinesList" class="space-y-2.5">
+              <!-- Rendered via JS -->
+              <p class="text-sm text-slate-400 py-6 text-center">No active deadlines. Relax like a sloth!</p>
+            </div>
+          </div>
+
+          <!-- Recent Activity & Safe Undo (1 col) -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="history" class="w-5 h-5 text-slate-500"></i>
+                <h3 class="font-bold text-slate-900">Recent Activity</h3>
+              </div>
+              <span class="text-[11px] text-slate-400 font-mono">Audit Log</span>
+            </div>
+
+            <div id="recentActivityList" class="space-y-3">
+              <!-- Rendered via JS -->
+              <p class="text-sm text-slate-400 py-6 text-center">No recent actions.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Overview Grid -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <h3 class="font-bold text-slate-900 mb-4">Document Categories</h3>
+          <div id="categoryCardsGrid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: ALL DOCUMENTS VIEW -->
+      <section id="tab-documents" class="space-y-5 hidden">
+        <!-- Search & Filter Bar -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-1">
+              <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+              <input type="text" id="searchInput" placeholder="Search filenames, issuer, or natural language: 'Show electricity bills'..."
+                     class="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     onkeydown="if(event.key==='Enter') loadDocuments()">
+            </div>
+            <div class="flex gap-2">
+              <select id="filterCategory" onchange="loadDocuments()" class="border border-slate-200 rounded-lg text-sm px-3 py-2 bg-white text-slate-700">
+                <option value="All">All Categories</option>
+                <option value="Bills/Electricity">Electricity Bills</option>
+                <option value="Bills/Internet">Internet Bills</option>
+                <option value="Receipts">Receipts</option>
+                <option value="Invoices">Invoices</option>
+                <option value="Insurance">Insurance</option>
+                <option value="Rent & Agreements">Rent Agreements</option>
+                <option value="Warranties">Warranties</option>
+                <option value="Academic">Academic</option>
+                <option value="Other">Other</option>
+              </select>
+              <select id="filterStatus" onchange="loadDocuments()" class="border border-slate-200 rounded-lg text-sm px-3 py-2 bg-white text-slate-700">
+                <option value="All">All Statuses</option>
+                <option value="needs_review">Needs Review</option>
+                <option value="organized">Organized</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Natural Language Preset Pills -->
+          <div class="flex flex-wrap items-center gap-1.5 text-xs">
+            <span class="text-slate-400 font-medium mr-1">Try natural queries:</span>
+            <button onclick="applyQueryPill('Show my electricity bills')" class="bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-600 px-2.5 py-1 rounded-full transition-colors">⚡ Electricity bills</button>
+            <button onclick="applyQueryPill('Show internet bills')" class="bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-600 px-2.5 py-1 rounded-full transition-colors">🌐 Internet bills</button>
+            <button onclick="applyQueryPill('Find receipts')" class="bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-600 px-2.5 py-1 rounded-full transition-colors">🧾 Purchase receipts</button>
+            <button onclick="applyQueryPill('Show warranties')" class="bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-600 px-2.5 py-1 rounded-full transition-colors">🛡️ Warranties</button>
+            <button onclick="applyQueryPill('')" class="text-slate-400 hover:text-slate-700 px-2 py-1">Clear</button>
+          </div>
+        </div>
+
+        <!-- Documents Table / Cards -->
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+            <h3 class="font-bold text-slate-900 text-sm">Document Library</h3>
+            <span id="tableCountBadge" class="text-xs text-slate-500 font-mono">0 items</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-600">
+              <thead class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <tr>
+                  <th class="py-3 px-4">Document / Proposed Name</th>
+                  <th class="py-3 px-4">Category</th>
+                  <th class="py-3 px-4">Provider / Issuer</th>
+                  <th class="py-3 px-4">Amount</th>
+                  <th class="py-3 px-4">Due Date</th>
+                  <th class="py-3 px-4">Status</th>
+                  <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="documentsTableBody" class="divide-y divide-slate-100">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+
+          <div id="tableEmptyState" class="p-12 text-center hidden">
+            <div class="text-4xl mb-3">🦥</div>
+            <h4 class="font-bold text-slate-900">No documents found</h4>
+            <p class="text-sm text-slate-500 mt-1 max-w-sm mx-auto">Your documents deserve a little less chaos. Upload your first bill or click "Load Demo Pack" to test.</p>
+            <button onclick="openUploadModal()" class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium shadow-sm">
+              <i data-lucide="upload-cloud" class="w-4 h-4 mr-2"></i>
+              Upload Your First Document
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: UPCOMING DEADLINES VIEW -->
+      <section id="tab-deadlines" class="space-y-6 hidden">
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Upcoming Deadlines & Expirations</h2>
+              <p class="text-sm text-slate-500 mt-1">Automatically monitored from your bills, warranties, and insurance policies.</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600">
+              <i data-lucide="bell-ring" class="w-5 h-5"></i>
+            </div>
+          </div>
+
+          <div id="fullDeadlinesTimeline" class="space-y-4 mt-6">
+            <!-- Timeline items rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: PRIVACY & ARCHITECTURE VIEW -->
+      <section id="tab-privacy" class="space-y-6 hidden">
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <div class="flex items-center space-x-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl">
+              🛡️
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Privacy by Design — 100% Local-First</h2>
+              <p class="text-sm text-slate-500">Hacktoberfest "Slow and Steady" Open-Source AI Architecture</p>
+            </div>
+          </div>
+
+          <div class="prose prose-slate text-sm max-w-none space-y-4">
+            <p>
+              Traditional document managers send sensitive invoices, salary slips, and medical records to third-party cloud LLMs.
+              <strong>Bill & Document Sloth executes entirely on your device.</strong>
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 not-prose my-6">
+              <div class="border border-emerald-200 bg-emerald-50/50 rounded-xl p-4">
+                <div class="font-bold text-emerald-950 flex items-center mb-1">
+                  <i data-lucide="hard-drive" class="w-4 h-4 mr-2 text-emerald-700"></i> Local Storage
+                </div>
+                <p class="text-xs text-emerald-900">All PDFs, text, and extracted metadata reside locally in <code class="bg-white/80 px-1 py-0.5 rounded">sloth_documents.db</code> (SQLite).</p>
+              </div>
+
+              <div class="border border-blue-200 bg-blue-50/50 rounded-xl p-4">
+                <div class="font-bold text-blue-950 flex items-center mb-1">
+                  <i data-lucide="cpu" class="w-4 h-4 mr-2 text-blue-700"></i> Open-Source Extraction
+                </div>
+                <p class="text-xs text-blue-900">PyPDF embedded parser and deterministic regex/NLP heuristics run locally in milliseconds with zero remote API calls.</p>
+              </div>
+
+              <div class="border border-amber-200 bg-amber-50/50 rounded-xl p-4">
+                <div class="font-bold text-amber-950 flex items-center mb-1">
+                  <i data-lucide="user-check" class="w-4 h-4 mr-2 text-amber-700"></i> Human In The Loop
+                </div>
+                <p class="text-xs text-amber-900">AI proposes. You approve. No files are moved, renamed, or modified without your explicit confirmation.</p>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs font-mono text-slate-700">
+              <p class="font-semibold text-slate-900 mb-1">System Verification Check:</p>
+              <ul class="space-y-1">
+                <li>✔ SQLite Database: Active at <code class="bg-white px-1">sloth_documents.db</code></li>
+                <li>✔ Local Folder Tree: <code class="bg-white px-1">documents/organized/{Category}/{Year}/</code></li>
+                <li>✔ Network Leakage: 0 bytes sent to external cloud APIs</li>
+              </ul>
+            </div>
+
+            <!-- Hacktoberfest Prize Category Integrations -->
+            <div class="mt-6 border-t border-slate-200 pt-5 not-prose">
+              <h3 class="font-bold text-slate-900 text-sm mb-3 flex items-center">
+                <span>🏆</span> <span class="ml-1.5">Hacktoberfest Week 3 Prize Category Qualifications</span>
+              </h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+                <div class="p-3 bg-purple-50/70 border border-purple-200 rounded-xl">
+                  <div class="flex items-center justify-between font-bold text-purple-950 mb-1">
+                    <span>Google Gemma</span>
+                    <span class="bg-purple-200 text-purple-900 px-1.5 py-0.5 rounded text-[10px]">$200 Prize</span>
+                  </div>
+                  <p class="text-purple-800 text-[11px]">Gemma open-weight model integration for deep structured bill parsing, type classification, and reasoning.</p>
+                </div>
+
+                <div class="p-3 bg-indigo-50/70 border border-indigo-200 rounded-xl">
+                  <div class="flex items-center justify-between font-bold text-indigo-950 mb-1">
+                    <span>Prior Labs TabPFN</span>
+                    <span class="bg-indigo-200 text-indigo-900 px-1.5 py-0.5 rounded text-[10px]">$200 Prize</span>
+                  </div>
+                  <p class="text-indigo-800 text-[11px]">TabPFN-3.5 tabular foundation model forecasting next month's utility spending & detecting cost anomalies.</p>
+                </div>
+
+                <div class="p-3 bg-blue-50/70 border border-blue-200 rounded-xl">
+                  <div class="flex items-center justify-between font-bold text-blue-950 mb-1">
+                    <span>Render</span>
+                    <span class="bg-blue-200 text-blue-900 px-1.5 py-0.5 rounded text-[10px]">$200 Prize</span>
+                  </div>
+                  <p class="text-blue-800 text-[11px]">Production <code class="bg-white px-1">render.yaml</code> blueprint and Dockerfile for 1-click cloud deployment of the AI runtime.</p>
+                </div>
+
+                <div class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl">
+                  <div class="flex items-center justify-between font-bold text-emerald-950 mb-1">
+                    <span>ElevenLabs</span>
+                    <span class="bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded text-[10px]">$100 Prize</span>
+                  </div>
+                  <p class="text-emerald-800 text-[11px]">Voice briefings: Sloth agent speaks out loud to brief users on upcoming payment deadlines and paperwork.</p>
+                </div>
+
+                <div class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl">
+                  <div class="flex items-center justify-between font-bold text-amber-950 mb-1">
+                    <span>Sentry Tracing</span>
+                    <span class="bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded text-[10px]">$100 Prize</span>
+                  </div>
+                  <p class="text-amber-800 text-[11px]">Sentry Agent Tracing instrumented across document ingestion latency, OCR performance, and extraction errors.</p>
+                </div>
+
+                <div class="p-3 bg-slate-100 border border-slate-300 rounded-xl">
+                  <div class="flex items-center justify-between font-bold text-slate-900 mb-1">
+                    <span>.tech Domains</span>
+                    <span class="bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded text-[10px]">$100 Prize</span>
+                  </div>
+                  <p class="text-slate-700 text-[11px]">DNS mapping and production domain configuration ready for claiming your free .tech domain.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL: UPLOAD DOCUMENTS -->
+  <div id="uploadModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">🦥</div>
+          <h3 class="font-bold text-slate-900">Upload Documents</h3>
+        </div>
+        <button onclick="closeUploadModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Drag & Drop Zone -->
+      <div id="dropZone" class="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl p-8 text-center bg-slate-50/50 transition-colors cursor-pointer">
+        <i data-lucide="file-up" class="w-10 h-10 text-slate-400 mx-auto mb-3"></i>
+        <p class="text-sm font-medium text-slate-700">Drag & drop bills, receipts, or invoices here</p>
+        <p class="text-xs text-slate-400 mt-1">Supports PDF, TXT, PNG, JPG (Multi-file enabled)</p>
+        <input type="file" id="fileInput" multiple accept=".pdf,.txt,.png,.jpg,.jpeg" class="hidden" onchange="handleFileSelect(this.files)">
+        <button type="button" onclick="document.getElementById('fileInput').click()" class="mt-4 px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg shadow-sm">
+          Browse Computer
+        </button>
+      </div>
+
+      <!-- Selected Files Preview -->
+      <div id="uploadQueue" class="space-y-2 max-h-40 overflow-y-auto hidden">
+        <!-- Render queued files -->
+      </div>
+
+      <!-- Progress / Status -->
+      <div id="uploadProgress" class="hidden text-xs text-blue-600 flex items-center space-x-2">
+        <span class="w-3 h-3 rounded-full border-2 border-blue-600 border-t-transparent animate-spin"></span>
+        <span>Extracting text & analyzing document fields...</span>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+        <button onclick="closeUploadModal()" class="px-4 py-2 border border-slate-300 text-slate-700 text-xs font-medium rounded-lg hover:bg-slate-50">
+          Cancel
+        </button>
+        <button id="btnSubmitUpload" onclick="submitUpload()" disabled class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg shadow-sm">
+          Process with Sloth AI
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: REVIEW & APPROVE (SPLIT-SCREEN) -->
+  <div id="reviewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-5xl w-full h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center space-x-3">
+          <span class="text-xl">🦥</span>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h3 class="font-bold text-slate-900" id="reviewModalTitle">Review Extracted Information</h3>
+              <span id="reviewConfidencePill" class="text-xs px-2 py-0.5 rounded-full font-medium">92% AI Confidence</span>
+            </div>
+            <p class="text-xs text-slate-500" id="reviewOriginalFilename">Original: bill.pdf</p>
+          </div>
+        </div>
+        <button onclick="closeReviewModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Split-Screen) -->
+      <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <!-- Left: Document Preview -->
+        <div class="w-full md:w-1/2 border-r border-slate-200 bg-slate-100 flex flex-col">
+          <div class="p-2.5 bg-white border-b border-slate-200 flex items-center justify-between text-xs text-slate-500">
+            <span class="font-medium flex items-center">
+              <i data-lucide="file-text" class="w-3.5 h-3.5 mr-1 text-slate-400"></i> Document Preview
+            </span>
+            <a id="btnExternalView" href="#" target="_blank" class="text-blue-600 hover:underline flex items-center">
+              Open in new tab <i data-lucide="external-link" class="w-3 h-3 ml-1"></i>
+            </a>
+          </div>
+          <div class="flex-1 p-2 overflow-auto" id="previewContainer">
+            <iframe id="pdfPreviewIframe" class="w-full h-full rounded border border-slate-200 bg-white" src=""></iframe>
+            <div id="textPreviewFallback" class="hidden p-4 bg-white rounded border border-slate-200 font-mono text-xs text-slate-700 whitespace-pre-wrap"></div>
+          </div>
+        </div>
+
+        <!-- Right: Editable Extracted Fields -->
+        <div class="w-full md:w-1/2 p-6 overflow-y-auto space-y-4">
+          <div class="bg-amber-50/70 border border-amber-200/80 rounded-xl p-3 text-xs text-amber-900 flex items-start space-x-2">
+            <i data-lucide="info" class="w-4 h-4 text-amber-700 shrink-0 mt-0.5"></i>
+            <span>Human-in-the-loop: Verify extracted fields below. Fields with lower confidence are marked with amber indicators.</span>
+          </div>
+
+          <form id="reviewForm" onsubmit="event.preventDefault();" class="space-y-4">
+            <input type="hidden" id="editDocId">
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Category</label>
+                <select id="editCategory" class="w-full border border-slate-300 rounded-lg text-sm px-3 py-2 bg-white focus:ring-2 focus:ring-blue-500">
+                  <option value="Bills/Electricity">Bills/Electricity</option>
+                  <option value="Bills/Internet">Bills/Internet</option>
+                  <option value="Receipts">Receipts</option>
+                  <option value="Invoices">Invoices</option>
+                  <option value="Insurance">Insurance</option>
+                  <option value="Rent & Agreements">Rent & Agreements</option>
+                  <option value="Warranties">Warranties</option>
+                  <option value="Academic">Academic</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Document Type</label>
+                <input type="text" id="editDocType" class="w-full border border-slate-300 rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Issuer / Provider</label>
+                <input type="text" id="editIssuer" placeholder="e.g. BESCOM, Airtel, Apple" class="w-full border border-slate-300 rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Total Amount & Currency</label>
+                <div class="flex space-x-2">
+                  <input type="text" id="editCurrency" class="w-12 border border-slate-300 rounded-lg text-sm px-2 py-2 text-center font-bold bg-slate-50" value="₹">
+                  <input type="number" step="0.01" id="editAmount" placeholder="0.00" class="flex-1 border border-slate-300 rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500 font-mono">
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Due / Expiry Date</label>
+                <input type="date" id="editDueDate" class="w-full border border-slate-300 rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Document / Bill Date</label>
+                <input type="date" id="editDocDate" class="w-full border border-slate-300 rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Billing Period / Term</label>
+                <input type="text" id="editBillingPeriod" placeholder="e.g. October 2026" class="w-full border border-slate-300 rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Invoice / Reference No.</label>
+                <input type="text" id="editInvoiceNum" placeholder="e.g. INV-9481" class="w-full border border-slate-300 rounded-lg text-sm px-3 py-2 focus:ring-2 focus:ring-blue-500 font-mono">
+              </div>
+            </div>
+
+            <!-- Smart Filename Suggestion Preview -->
+            <div class="bg-blue-50/50 border border-blue-200/70 rounded-xl p-3.5 space-y-1.5">
+              <label class="block text-xs font-semibold text-blue-900 flex items-center">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 mr-1 text-blue-600"></i>
+                Smart Standardized Filename
+              </label>
+              <input type="text" id="editSuggestedFilename" class="w-full border border-blue-300 rounded-lg text-xs px-3 py-2 bg-white text-blue-900 font-mono focus:ring-2 focus:ring-blue-500">
+              <p class="text-[11px] text-blue-700">Format: <code class="bg-blue-100/70 px-1 py-0.5 rounded">YYYY-MM_DocType_Issuer.pdf</code></p>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center space-x-2">
+          <button onclick="handleRejectDocument()" class="px-3.5 py-2 text-rose-700 hover:bg-rose-50 border border-rose-200 text-xs font-medium rounded-lg transition-colors">
+            Reject / Archive
+          </button>
+          <button id="btnGemmaReasoning" onclick="handleGemmaExtract()" class="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 text-xs font-semibold rounded-lg flex items-center transition-colors" title="Google Gemma Open-Weight Model ($200 Prize Track)">
+            <span class="mr-1">🧠</span> Verify with Gemma
+          </button>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="handleSaveEditsOnly()" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-medium rounded-lg transition-colors">
+            Save Changes Only
+          </button>
+          <button onclick="handleApproveAndOrganize()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center transition-colors">
+            <i data-lucide="check-circle" class="w-4 h-4 mr-1.5"></i>
+            Approve & Organize File
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-900" id="detailTitle">Document Details</h3>
+        <button onclick="closeDetailModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="detailContent" class="space-y-3 text-sm text-slate-600">
+        <!-- Rendered via JS -->
+      </div>
+
+      <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+        <button id="btnDeleteDoc" onclick="handleDeleteCurrentDoc()" class="text-rose-600 hover:text-rose-800 text-xs font-semibold flex items-center">
+          <i data-lucide="trash-2" class="w-4 h-4 mr-1"></i> Delete Document
+        </button>
+        <button onclick="closeDetailModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium rounded-lg">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2"></div>
+
+  <!-- App JavaScript Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
