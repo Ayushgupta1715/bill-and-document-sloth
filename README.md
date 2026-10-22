@@ -6,7 +6,7 @@
 [![Bill & Document Sloth CI](https://github.com/Ayushgupta1715/bill-and-document-sloth/actions/workflows/ci.yml/badge.svg)](https://github.com/Ayushgupta1715/bill-and-document-sloth/actions)
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Ayushgupta1715/bill-and-document-sloth)
 
-> 🎥 **[Watch 1-Minute Demo Video with AI Voice (demo_video.mp4)](assets/demo_video.mp4)**
+> 🎥 **[Watch 1-Minute Demo Video on YouTube](https://youtu.be/kEPmFs-7-N0)** | **[Download Local MP4](assets/demo_video.mp4)**
 
 ---
 

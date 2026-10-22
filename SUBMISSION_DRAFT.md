@@ -5,10 +5,10 @@
 
 Every adult and student dreads the paperwork shuffle: opening randomly named files like `IMG_20261021_124532.pdf`, hunting through fine print for payment due dates, losing track of appliance warranty periods, and maintaining brittle manual spreadsheets. 
 
-**Bill & Document Sloth does the work so you don't have to:**
+**Bill & Document Sloth does the heavy lifting so you can be as lazy as a sloth:**
 * **Drop Paperwork Once:** Drag and drop PDFs, receipts, or phone bills.
-* **Intelligent Extraction:** Local open-source AI extracts the issuer, category, total amount, due date, document date, and invoice number.
-* **Smart Filename Suggestions:** Replaces chaotic names with standardized filenames (e.g. `2026-10_Electricity_Bill_BESCOM.pdf`).
+* **Intelligent Local Extraction:** Local open-source AI extracts the issuer, category, total amount, due date, document date, and invoice number.
+* **Smart Standardized Filenames:** Automatically generates clean filenames (e.g., `2026-10_Electricity_Bill_BESCOM.pdf`).
 * **Human-in-the-Loop Review:** Split-screen side-by-side verification with confidence scores before any file is moved.
 * **Safe Organization & Undo:** Files are organized into structured directories (`documents/organized/{Category}/{Year}/`) with 1-click reversible undo.
 * **Proactive Deadlines:** Monitors overdue bills, payments due in 3 days, and expiring warranties before penalties strike.
@@ -16,17 +16,20 @@ Every adult and student dreads the paperwork shuffle: opening randomly named fil
 ---
 
 ## Demo
-* **🎥 1-Minute Video Demo with AI Voice:** [Watch demo_video.mp4](https://github.com/Ayushgupta1715/bill-and-document-sloth/blob/main/assets/demo_video.mp4)
+
+{% youtube kEPmFs-7-N0 %}
+
+* **Direct YouTube Link:** [Watch Video Demo on YouTube](https://youtu.be/kEPmFs-7-N0)
 * **GitHub Repository:** [https://github.com/Ayushgupta1715/bill-and-document-sloth](https://github.com/Ayushgupta1715/bill-and-document-sloth)
 * **Local Interactive Dashboard:** Runs locally on `http://127.0.0.1:8000` with Swagger API docs at `http://127.0.0.1:8000/docs`.
-* **1-Click Built-in Demo Pack:** Includes a built-in generator that synthesizes realistic BESCOM Electricity Bills, Airtel Fiber Invoices, AppleCare Warranty Certificates, Star Health Insurance Policies, and Coffee Receipts on the fly so evaluators can test immediately with one click!
+* **1-Click Built-in Demo Pack:** Synthesizes realistic BESCOM Electricity Bills, Airtel Fiber Invoices, AppleCare Warranty Certificates, Star Health Insurance Policies, and Coffee Receipts on the fly so evaluators can test immediately with one click!
 
 ---
 
 ## Code
 {% github Ayushgupta1715/bill-and-document-sloth %}
 
-* **Direct Link:** [https://github.com/Ayushgupta1715/bill-and-document-sloth](https://github.com/Ayushgupta1715/bill-and-document-sloth)
+* **Repository:** [https://github.com/Ayushgupta1715/bill-and-document-sloth](https://github.com/Ayushgupta1715/bill-and-document-sloth)
 * **License:** MIT License (Open-Source)
 
 ---
@@ -35,12 +38,12 @@ Every adult and student dreads the paperwork shuffle: opening randomly named fil
 The application combines local-first inference, open-weight reasoning models, and tabular foundation models:
 
 1. **Local-First Processing Engine:**
-   * **Backend:** FastAPI, Python 3.14, SQLite3, PyPDF for embedded text extraction, and ReportLab for PDF generation.
+   * **Backend:** FastAPI, Python 3.14, SQLite3, PyPDF for embedded text extraction, and ReportLab for synthetic sample generation.
    * **Frontend:** Clean, responsive single-page application built with Tailwind CSS, Lucide icons, and Canvas Confetti.
 2. **Google Gemma Open-Weight Model (`gemma-2-2b-it`):**
    * Integrated in `app/gemma_service.py` to provide deep structured JSON parsing and field reasoning traces for complex or ambiguous bills.
 3. **Prior Labs TabPFN-3.5 Foundation Model:**
-   * Integrated in `app/tabpfn_analyzer.py` to perform in-context tabular regression and outlier detection over historical billing cycles.
+   * Integrated in `app/tabpfn_analyzer.py` to perform in-context tabular regression and outlier detection over historical billing cycles (forecasting next month's utility spend and alerting on anomalous spikes).
 4. **ElevenLabs Voice Integration:**
    * Integrated in `app/voice_service.py` to give the sloth agent a calm, spoken audio briefing of pending bills and deadlines.
 5. **Safe File Operations:**
